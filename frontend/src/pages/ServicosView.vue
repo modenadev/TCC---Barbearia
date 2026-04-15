@@ -1,15 +1,28 @@
 <template>
-  <section>
-    <h2>Serviços</h2>
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Serviços</h2>
+      <p class="section-subtitle">
+        Escolha o atendimento ideal para você. Valores transparentes, tempo estimado e uma interface pensada para decisão rápida.
+      </p>
 
-    <div v-if="loading">Carregando serviços...</div>
+      <div v-if="loading">Carregando serviços...</div>
 
-    <div v-else class="grid">
-      <div class="card" v-for="servico in servicos" :key="servico.id">
-        <h3>{{ servico.nome }}</h3>
-        <p>{{ servico.descricao }}</p>
-        <p><strong>Preço:</strong> R$ {{ servico.preco }}</p>
-        <p><strong>Duração:</strong> {{ servico.duracaoMinutos }} min</p>
+      <div v-else class="services-grid">
+        <article class="card service-card" v-for="servico in servicos" :key="servico.id">
+          <div class="service-top">
+            <div>
+              <h3>{{ servico.nome }}</h3>
+              <p>{{ servico.descricao || 'Serviço premium com atendimento profissional.' }}</p>
+            </div>
+            <span class="service-price">R$ {{ formatarPreco(servico.preco) }}</span>
+          </div>
+
+          <div class="service-footer">
+            <span>{{ servico.duracaoMinutos }} min</span>
+            <router-link to="/agendamento" class="btn btn-primary">Agendar</router-link>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -22,6 +35,10 @@ import api from '../services/api'
 const servicos = ref([])
 const loading = ref(true)
 
+const formatarPreco = (valor) => {
+  return Number(valor).toFixed(2).replace('.', ',')
+}
+
 const carregarServicos = async () => {
   try {
     const response = await api.get('/servicos')
@@ -33,22 +50,59 @@ const carregarServicos = async () => {
   }
 }
 
-onMounted(() => {
-  carregarServicos()
-})
+onMounted(carregarServicos)
 </script>
 
 <style scoped>
-.grid {
+.services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.service-card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+}
+
+.service-top {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.card {
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #333;
+.service-top h3 {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.service-top p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.service-price {
+  display: inline-block;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.service-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.service-footer span {
+  color: var(--text-soft);
 }
 </style>
