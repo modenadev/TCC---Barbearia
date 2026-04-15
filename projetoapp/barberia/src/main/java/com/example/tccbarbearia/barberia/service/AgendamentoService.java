@@ -72,7 +72,7 @@ public class AgendamentoService {
     public List<DisponibilidadeResponse> consultarDisponibilidade(LocalDate data, Long servicoId) {
         Servico servico = servicoService.buscarPorId(servicoId);
 
-        int diaSemana = data.getDayOfWeek().getValue(); // 1=segunda ... 7=domingo
+        int diaSemana = data.getDayOfWeek().getValue(); 
         List<HorarioTrabalho> horarios = horarioTrabalhoRepository.findByDiaSemanaAndAtivoTrue(diaSemana);
 
         if (horarios.isEmpty()) {
