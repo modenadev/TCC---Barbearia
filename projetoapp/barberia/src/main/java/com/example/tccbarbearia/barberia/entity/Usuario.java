@@ -7,6 +7,7 @@ import lombok.*;
 @Table(name = "usuarios")
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Usuario {
@@ -18,7 +19,7 @@ public class Usuario {
     @Column(nullable = false, length = 120)
     private String nome;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(nullable = false)
@@ -27,8 +28,4 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Perfil perfil;
-
-
-    
-    
 }

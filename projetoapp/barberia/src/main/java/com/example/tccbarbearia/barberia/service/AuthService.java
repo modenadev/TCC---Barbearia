@@ -28,51 +28,50 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public AuthResponse registerCliente(RegisterRequest request) {
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("E-mail já cadastrado");
-        }
-
-        Usuario usuario = Usuario.builder()
-                .nome(request.getNome())
-                .email(request.getEmail())
-                .senha(passwordEncoder.encode(request.getSenha()))
-                .perfil(Perfil.CLIENTE)
-                .build();
-
-        usuarioRepository.save(usuario);
-
-        String token = jwtService.generateToken(usuario.getEmail());
-
-        return new AuthResponse(
-                token,
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getPerfil().name(), token
-        );
+  public AuthResponse registerCliente(RegisterRequest request) {
+    if (usuarioRepository.existsByEmail(request.getEmail())) {
+        throw new BusinessException("E-mail já cadastrado");
     }
 
-    public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getSenha()
-                )
-        );
+    Usuario usuario = Usuario.builder()
+            .nome(request.getNome())
+            .email(request.getEmail())
+            .senha(passwordEncoder.encode(request.getSenha()))
+            .perfil(Perfil.CLIENTE)
+            .build();
 
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+    usuarioRepository.save(usuario);
 
-        String token = jwtService.generateToken(usuario.getEmail());
+    String token = jwtService.generateToken(usuario.getEmail());
 
-        return new AuthResponse(
-                token,
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getPerfil().name(), token
-        );
-    }
+    return new AuthResponse(
+            token,
+            usuario.getNome(),
+            usuario.getEmail(),
+            usuario.getPerfil().name()
+    );
+}
 
+ public AuthResponse login(LoginRequest request) {
+    authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                    request.getEmail(),
+                    request.getSenha()
+            )
+    );
+
+    Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+
+    String token = jwtService.generateToken(usuario.getEmail());
+
+    return new AuthResponse(
+            token,
+            usuario.getNome(),
+            usuario.getEmail(),
+            usuario.getPerfil().name()
+    );
+}
     public void criarAdminSeNaoExistir() {
         String emailAdmin = "admin@rdbarbearia.com";
 
