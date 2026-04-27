@@ -29,6 +29,10 @@
       </div>
     </div>
   </section>
+
+  <router-link to="/admin/agendamentos" class="btn btn-primary">
+    Ver agendamentos
+  </router-link>
 </template>
 
 <script setup>

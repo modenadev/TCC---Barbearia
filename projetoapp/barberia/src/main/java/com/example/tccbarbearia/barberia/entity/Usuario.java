@@ -22,6 +22,9 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    @Column(nullable = false, length = 20)
+    private String telefone;
+
     @Column(nullable = false)
     private String senha;
 

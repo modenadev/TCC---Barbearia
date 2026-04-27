@@ -17,5 +17,9 @@ public class RegisterRequest {
     @NotBlank
     private String senha;
 
+    @NotBlank
+    private String telefone;
+
+
     
 }

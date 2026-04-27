@@ -51,7 +51,7 @@
 
         <form v-if="horarioSelecionado" @submit.prevent="agendar" class="mini-form">
           <div class="field">
-            <label>Nome</label>
+            <label>Nome</label> 
             <input v-model="nome" class="input" required />
           </div>
 

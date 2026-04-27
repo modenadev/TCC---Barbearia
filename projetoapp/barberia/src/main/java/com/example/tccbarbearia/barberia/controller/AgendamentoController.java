@@ -40,16 +40,36 @@ public class AgendamentoController {
     @PatchMapping("/{id}/status")
     public Agendamento atualizarStatus(
             @PathVariable Long id,
-            @RequestBody StatusAgendamentoRequest request
-    ) {
+            @RequestBody StatusAgendamentoRequest request) {
         return service.atualizarStatus(id, request.getStatus());
     }
 
     @GetMapping("/disponibilidade")
     public List<DisponibilidadeResponse> disponibilidade(
             @RequestParam LocalDate data,
-            @RequestParam Long servicoId
-    ) {
+            @RequestParam Long servicoId) {
         return service.consultarDisponibilidade(data, servicoId);
+    }
+
+    @GetMapping("/meus")
+    public List<Agendamento> meusAgendamentos() {
+        return service.listarDoClienteLogado();
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    public Agendamento cancelar(@PathVariable Long id) {
+        return service.cancelarAgendamento(id);
+    }
+
+    @PatchMapping("/{id}/remarcar")
+    public Agendamento remarcar(
+            @PathVariable Long id,
+            @RequestBody AgendamentoRequest request) {
+        return service.remarcarAgendamento(id, request);
+    }
+
+    @GetMapping("/admin/todos")
+    public List<Agendamento> listarTodosParaAdmin() {
+        return service.listar();
     }
 }

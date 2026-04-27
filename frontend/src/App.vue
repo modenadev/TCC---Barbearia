@@ -14,6 +14,7 @@
           <router-link to="/">Home</router-link>
           <router-link to="/servicos">Serviços</router-link>
           <router-link to="/agendamento">Agendar</router-link>
+          <router-link v-if="!estaAutenticado()" to="/cadastro" class="login-link"> Cadastro </router-link>
         </nav>
 
         <div class="nav-right">
@@ -51,7 +52,6 @@
 </template>
 
 <style scoped>
-
 .login-link {
   color: var(--text-soft);
   font-weight: 600;

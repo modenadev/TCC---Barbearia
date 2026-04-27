@@ -5,6 +5,7 @@ import AdminDashboardView from '../pages/AdminDashboardView.vue'
 import ClienteDashboardView from '../pages/ClienteDashboardView.vue'
 import { estaAutenticado, getPerfil } from '../utils/auth'
 import RegisterView from '../pages/RegisterView.vue'
+import AdminAgendamentosView from '../pages/AdminAgendamentosView.vue'
 
 const routes = [
     {
@@ -48,6 +49,13 @@ const routes = [
         path: '/cadastro',
         name: 'cadastro',
         component: RegisterView
+    },
+
+    {
+        path: '/admin/agendamentos',
+        name: 'admin-agendamentos',
+        component: AdminAgendamentosView,
+        meta: { requiresAuth: true, role: 'ADMIN' }
     }
 
 

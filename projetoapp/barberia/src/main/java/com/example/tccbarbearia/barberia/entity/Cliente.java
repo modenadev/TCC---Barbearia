@@ -12,6 +12,10 @@ import lombok.*;
 @Builder
 public class Cliente {
 
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

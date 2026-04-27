@@ -19,6 +19,11 @@
           </div>
 
           <div class="field">
+            <label>Telefone</label>
+            <input v-model="telefone" type="tel" class="input" required />
+          </div>
+
+          <div class="field">
             <label>Senha</label>
             <input v-model="senha" type="password" class="input" required />
           </div>
@@ -49,6 +54,7 @@ const router = useRouter()
 
 const nome = ref('')
 const email = ref('')
+const telefone = ref('')
 const senha = ref('')
 const erro = ref('')
 const loading = ref(false)
@@ -61,7 +67,8 @@ const cadastrar = async () => {
     const response = await api.post('/auth/register-cliente', {
       nome: nome.value,
       email: email.value,
-      senha: senha.value
+      senha: senha.value,
+      telefone: telefone.value
     })
 
     salvarAuth(response.data)

@@ -5,7 +5,11 @@ import com.example.tccbarbearia.barberia.dto.DisponibilidadeResponse;
 import com.example.tccbarbearia.barberia.entity.*;
 import com.example.tccbarbearia.barberia.exception.BusinessException;
 import com.example.tccbarbearia.barberia.repository.AgendamentoRepository;
+import com.example.tccbarbearia.barberia.repository.ClienteRepository;
 import com.example.tccbarbearia.barberia.repository.HorarioTrabalhoRepository;
+import com.example.tccbarbearia.barberia.repository.UsuarioRepository;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -19,17 +23,22 @@ public class AgendamentoService {
     private final ClienteService clienteService;
     private final ServicoService servicoService;
     private final HorarioTrabalhoRepository horarioTrabalhoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ClienteRepository clienteRepository;
 
     public AgendamentoService(
             AgendamentoRepository agendamentoRepository,
             ClienteService clienteService,
             ServicoService servicoService,
-            HorarioTrabalhoRepository horarioTrabalhoRepository
-    ) {
+            HorarioTrabalhoRepository horarioTrabalhoRepository,
+            UsuarioRepository usuarioRepository,
+            ClienteRepository clienteRepository) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteService = clienteService;
         this.servicoService = servicoService;
         this.horarioTrabalhoRepository = horarioTrabalhoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.clienteRepository = clienteRepository;
     }
 
     public List<Agendamento> listar() {
@@ -42,7 +51,22 @@ public class AgendamentoService {
     }
 
     public Agendamento criar(AgendamentoRequest request) {
-        Cliente cliente = clienteService.buscarPorId(request.getClienteId());
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Usuario usuarioLogado = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+
+        Cliente clienteParaAgendar;
+
+        if (usuarioLogado.getPerfil() == Perfil.ADMIN) {
+            clienteParaAgendar = clienteService.buscarPorId(request.getClienteId());
+        }
+
+        else {
+            clienteParaAgendar = clienteRepository.findByUsuario(usuarioLogado)
+                    .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
+        }
+
         Servico servico = servicoService.buscarPorId(request.getServicoId());
 
         LocalDateTime inicio = request.getDataHoraInicio();
@@ -52,7 +76,7 @@ public class AgendamentoService {
         validarConflito(inicio, fim);
 
         Agendamento agendamento = Agendamento.builder()
-                .cliente(cliente)
+                .cliente(clienteParaAgendar)
                 .servico(servico)
                 .dataHoraInicio(inicio)
                 .dataHoraFim(fim)
@@ -72,7 +96,7 @@ public class AgendamentoService {
     public List<DisponibilidadeResponse> consultarDisponibilidade(LocalDate data, Long servicoId) {
         Servico servico = servicoService.buscarPorId(servicoId);
 
-        int diaSemana = data.getDayOfWeek().getValue(); 
+        int diaSemana = data.getDayOfWeek().getValue();
         List<HorarioTrabalho> horarios = horarioTrabalhoRepository.findByDiaSemanaAndAtivoTrue(diaSemana);
 
         if (horarios.isEmpty()) {
@@ -94,10 +118,8 @@ public class AgendamentoService {
 
                 boolean ocupado = agendamentosDia.stream()
                         .filter(a -> a.getStatus() == StatusAgendamento.AGENDADO)
-                        .anyMatch(a ->
-                                inicioSlot.isBefore(a.getDataHoraFim()) &&
-                                fimSlot.isAfter(a.getDataHoraInicio())
-                        );
+                        .anyMatch(a -> inicioSlot.isBefore(a.getDataHoraFim()) &&
+                                fimSlot.isAfter(a.getDataHoraInicio()));
 
                 resposta.add(new DisponibilidadeResponse(atual, !ocupado));
                 atual = atual.plusMinutes(30);
@@ -111,10 +133,8 @@ public class AgendamentoService {
         int diaSemana = data.getDayOfWeek().getValue();
         List<HorarioTrabalho> horarios = horarioTrabalhoRepository.findByDiaSemanaAndAtivoTrue(diaSemana);
 
-        boolean dentroDoHorario = horarios.stream().anyMatch(h ->
-                !inicio.isBefore(h.getHoraInicio()) &&
-                !fim.isAfter(h.getHoraFim())
-        );
+        boolean dentroDoHorario = horarios.stream().anyMatch(h -> !inicio.isBefore(h.getHoraInicio()) &&
+                !fim.isAfter(h.getHoraFim()));
 
         if (!dentroDoHorario) {
             throw new BusinessException("Horário fora do expediente");
@@ -126,11 +146,54 @@ public class AgendamentoService {
                 .findByStatusInAndDataHoraInicioLessThanAndDataHoraFimGreaterThan(
                         List.of(StatusAgendamento.AGENDADO),
                         fim,
-                        inicio
-                );
+                        inicio);
 
         if (!conflitos.isEmpty()) {
             throw new BusinessException("Já existe agendamento nesse horário");
         }
     }
+
+    public List<Agendamento> listarDoClienteLogado() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+
+        Cliente cliente = clienteRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
+
+        return agendamentoRepository.findByClienteId(cliente.getId());
+
+    }
+
+    public Agendamento remarcarAgendamento(Long id, AgendamentoRequest request) {
+        Agendamento agendamento = buscarPorId(id);
+
+        Servico servico = agendamento.getServico();
+
+        LocalDateTime novoInicio = request.getDataHoraInicio();
+        LocalDateTime novoFim = novoInicio.plusMinutes(servico.getDuracaoMinutos());
+
+        validarHorarioDeTrabalho(
+                novoInicio.toLocalDate(),
+                novoInicio.toLocalTime(),
+                novoFim.toLocalTime());
+
+        validarConflito(novoInicio, novoFim);
+
+        agendamento.setDataHoraInicio(novoInicio);
+        agendamento.setDataHoraFim(novoFim);
+        agendamento.setStatus(StatusAgendamento.AGENDADO);
+
+        return agendamentoRepository.save(agendamento);
+    }
+
+    public Agendamento cancelarAgendamento(Long id) {
+        Agendamento agendamento = buscarPorId(id);
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+        return agendamentoRepository.save(agendamento);
+    }
+
 }
