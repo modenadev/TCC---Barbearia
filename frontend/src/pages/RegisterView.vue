@@ -1,13 +1,18 @@
 <template>
   <section class="section">
-    <div class="container login-wrapper">
-      <div class="card login-card">
-        <h1 class="section-title">Entrar</h1>
+    <div class="container register-wrapper">
+      <div class="card register-card">
+        <h1 class="section-title">Criar conta</h1>
         <p class="section-subtitle">
-          Faça login para acessar sua área.
+          Cadastre-se para agendar seus horários.
         </p>
 
-        <form @submit.prevent="fazerLogin">
+        <form @submit.prevent="cadastrar">
+          <div class="field">
+            <label>Nome</label>
+            <input v-model="nome" class="input" required />
+          </div>
+
           <div class="field">
             <label>E-mail</label>
             <input v-model="email" type="email" class="input" required />
@@ -18,17 +23,17 @@
             <input v-model="senha" type="password" class="input" required />
           </div>
 
-          <p class="register-text">
-            Ainda não tem conta?
-            <router-link to="/cadastro">Criar conta</router-link>
-          </p>
-
           <button class="btn btn-primary full" type="submit" :disabled="loading">
-            {{ loading ? 'Entrando...' : 'Entrar' }}
+            {{ loading ? 'Criando conta...' : 'Criar conta' }}
           </button>
 
           <p v-if="erro" class="erro">{{ erro }}</p>
         </form>
+
+        <p class="login-text">
+          Já tem conta?
+          <router-link to="/login">Entrar</router-link>
+        </p>
       </div>
     </div>
   </section>
@@ -42,30 +47,27 @@ import { salvarAuth } from '../utils/auth'
 
 const router = useRouter()
 
+const nome = ref('')
 const email = ref('')
 const senha = ref('')
 const erro = ref('')
 const loading = ref(false)
 
-const fazerLogin = async () => {
+const cadastrar = async () => {
   erro.value = ''
   loading.value = true
 
   try {
-    const response = await api.post('/auth/login', {
+    const response = await api.post('/auth/register-cliente', {
+      nome: nome.value,
       email: email.value,
       senha: senha.value
     })
 
     salvarAuth(response.data)
-
-    if (response.data.perfil === 'ADMIN') {
-      router.push('/admin')
-    } else {
-      router.push('/cliente')
-    }
+    router.push('/cliente')
   } catch (e) {
-    erro.value = 'E-mail ou senha inválidos.'
+    erro.value = 'Erro ao criar conta. Verifique os dados.'
     console.error(e)
   } finally {
     loading.value = false
@@ -74,24 +76,13 @@ const fazerLogin = async () => {
 </script>
 
 <style scoped>
-.register-text {
-  margin-top: 20px;
-  color: var(--text-soft);
-  text-align: center;
-}
-
-.register-text a {
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.login-wrapper {
+.register-wrapper {
   min-height: 70vh;
   display: grid;
   place-items: center;
 }
 
-.login-card {
+.register-card {
   width: 100%;
   max-width: 460px;
   padding: 28px;
@@ -110,5 +101,16 @@ const fazerLogin = async () => {
 .erro {
   color: #ff6b6b;
   margin-top: 14px;
+}
+
+.login-text {
+  margin-top: 20px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.login-text a {
+  color: var(--primary);
+  font-weight: 600;
 }
 </style>
