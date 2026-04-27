@@ -17,6 +17,22 @@
         </nav>
 
         <div class="nav-right">
+          <router-link v-if="!estaAutenticado()" to="/login" class="login-link">
+            Login
+          </router-link>
+
+          <router-link v-if="estaAutenticado() && getPerfil() === 'ADMIN'" to="/admin" class="login-link">
+            Painel
+          </router-link>
+
+          <router-link v-if="estaAutenticado() && getPerfil() === 'CLIENTE'" to="/cliente" class="login-link">
+            Minha área
+          </router-link>
+
+          <button v-if="estaAutenticado()" class="logout-btn" @click="logout">
+            Sair
+          </button>
+
           <a href="https://instagram.com" target="_blank" class="icon">
             <Instagram :size="20" />
           </a>
@@ -35,6 +51,25 @@
 </template>
 
 <style scoped>
+
+.login-link {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  font: inherit;
+}
+
+.logout-btn:hover,
+.login-link:hover {
+  color: var(--primary);
+}
+
 .navbar {
   position: sticky;
   top: 0;
@@ -160,4 +195,13 @@
 <script setup>
 import { Instagram, Facebook } from 'lucide-vue-next'
 
+import { useRouter } from 'vue-router'
+import { estaAutenticado, limparAuth, getPerfil } from './utils/auth'
+
+const router = useRouter()
+
+const logout = () => {
+  limparAuth()
+  router.push('/login')
+}
 </script>
