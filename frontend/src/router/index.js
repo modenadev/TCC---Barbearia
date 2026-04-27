@@ -27,7 +27,25 @@ const routes = [
     name: 'cliente',
     component: ClienteDashboardView,
     meta: { requiresAuth: true, role: 'CLIENTE' }
+  },
+  
+  {
+    path: '/servicos',
+    name: 'servicos',
+    component: () => import('../pages/ServicosView.vue'),
+    meta: { requiresAuth: true }
+  },
+
+  {
+    path: '/agendamento',
+    name: 'agendamento',
+    component: () => import('../pages/AgendamentoView.vue'),
+    meta: { requiresAuth: true }
   }
+
+
+
+  
 ]
 
 const router = createRouter({
