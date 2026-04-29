@@ -13,23 +13,28 @@
           <router-link to="/">Home</router-link>
           <router-link to="/servicos">Serviços</router-link>
           <router-link to="/agendamento">Agendar</router-link>
-          <router-link v-if="!estaAutenticado()" to="/cadastro" class="login-link"> Cadastro </router-link>
+          <router-link v-if="!usuarioLogado.token" to="/cadastro" class="login-link"> Cadastro </router-link>
         </nav>
 
         <div class="nav-right">
-          <router-link v-if="!estaAutenticado()" to="/login" class="login-link">
+          <router-link v-if="!usuarioLogado.token" to="/login" class="login-link">
             Login
           </router-link>
 
-          <router-link v-if="estaAutenticado() && getPerfil() === 'ADMIN'" to="/admin" class="login-link">
+          <router-link v-if="!usuarioLogado.token" to="/cadastro" class="login-link">
+            Cadastro
+          </router-link>
+
+          <router-link v-if="usuarioLogado.token && usuarioLogado.perfil === 'ADMIN'" to="/admin" class="login-link">
             Painel
           </router-link>
 
-          <router-link v-if="estaAutenticado() && getPerfil() === 'CLIENTE'" to="/cliente" class="login-link">
+          <router-link v-if="usuarioLogado.token && usuarioLogado.perfil === 'CLIENTE'" to="/cliente"
+            class="login-link">
             Minha área
           </router-link>
 
-          <button v-if="estaAutenticado()" class="logout-btn" @click="logout">
+          <button v-if="usuarioLogado.token" class="logout-btn" @click="logout">
             Sair
           </button>
 
@@ -47,11 +52,73 @@
     <main>
       <router-view />
     </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+
+        <div class="footer-brand">
+          <img src="/src/assets/logo.png" alt="RD Barbearia" class="footer-logo" />
+
+          <p>
+            Experiência premium em cortes, barba e cuidados masculinos.
+            Agende seu horário online com praticidade.
+          </p>
+
+          <div class="footer-social">
+            <a href="https://instagram.com" target="_blank">
+              <Instagram :size="20" />
+            </a>
+
+            <a href="https://facebook.com" target="_blank">
+              <Facebook :size="20" />
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <h4>Navegação</h4>
+
+          <router-link to="/">Home</router-link>
+          <router-link to="/servicos">Serviços</router-link>
+          <router-link to="/agendamento">Agendar</router-link>
+        </div>
+
+        <div class="footer-contact">
+          <h4>Contato</h4>
+
+          <p>📍 Mogi Mirim - SP</p>
+          <p>📞 (19) 99999-9999</p>
+          <p>✉ contato@rdbarbearia.com</p>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 RD Barbearia — Todos os direitos reservados.
+      </div>
+    </footer>
   </div>
 </template>
 
-<style scoped>
+<script setup>
+import { Instagram, Facebook } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 
+
+import { limparAuth } from './utils/auth'
+import { usuarioLogado, atualizarUsuarioLogado } from './utils/authState'
+
+const router = useRouter()
+
+const logout = () => {
+  limparAuth()
+  atualizarUsuarioLogado()
+  router.push('/login')
+}
+
+</script>
+
+<style scoped>
 .login-link {
   color: var(--text-soft);
   font-weight: 600;
@@ -117,7 +184,7 @@
 
 .logo-img {
   height: 105px;
-  
+
 
   width: auto;
 
@@ -192,7 +259,7 @@
   align-items: center;
 }
 
-.nav-right::before{
+.nav-right::before {
   content: "";
   width: 1px;
   height: 24px;
@@ -215,6 +282,124 @@
   color: var(--text);
 }
 
+.footer {
+  margin-top: 100px;
+
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.01));
+
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(12px);
+}
+
+.footer-content {
+  padding: 60px 0;
+
+  display: grid;
+
+  grid-template-columns:
+    1.4fr 1fr 1fr;
+
+  gap: 40px;
+}
+
+.footer-logo {
+  width: 120px;
+
+  margin-bottom: 18px;
+
+  object-fit: contain;
+}
+
+.footer-brand p {
+  color: var(--text-soft);
+
+  line-height: 1.7;
+
+  max-width: 320px;
+}
+
+.footer-social {
+  display: flex;
+
+  gap: 14px;
+
+  margin-top: 20px;
+}
+
+.footer-social a {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  color: var(--text-soft);
+
+  transition: 0.3s;
+}
+
+.footer-social a:hover {
+  color: var(--primary);
+
+  border-color: rgba(212, 175, 55, 0.35);
+
+  transform: translateY(-3px);
+}
+
+.footer-links,
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-links h4,
+.footer-contact h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+
+  font-family: 'Poppins', sans-serif;
+
+  font-size: 18px;
+}
+
+.footer-links a,
+.footer-contact p {
+  color: var(--text-soft);
+
+  margin-bottom: 14px;
+
+  transition: 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--primary);
+
+  transform: translateX(4px);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+  padding: 22px;
+
+  text-align: center;
+
+  color: var(--text-soft);
+
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .nav-links {
     gap: 14px;
@@ -233,16 +418,3 @@
 }
 </style>
 
-<script setup>
-import { Instagram, Facebook } from 'lucide-vue-next'
-
-import { useRouter } from 'vue-router'
-import { estaAutenticado, limparAuth, getPerfil } from './utils/auth'
-
-const router = useRouter()
-
-const logout = () => {
-  limparAuth()
-  router.push('/login')
-}
-</script>

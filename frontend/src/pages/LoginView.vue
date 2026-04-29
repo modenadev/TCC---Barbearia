@@ -39,6 +39,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import { salvarAuth } from '../utils/auth'
+import { atualizarUsuarioLogado } from '../utils/authState'
 
 const router = useRouter()
 
@@ -57,7 +58,13 @@ const fazerLogin = async () => {
       senha: senha.value
     })
 
+    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('nome', response.data.nome)
+    localStorage.setItem('email', response.data.email)
+    localStorage.setItem('perfil', response.data.perfil)
+
     salvarAuth(response.data)
+    atualizarUsuarioLogado()
 
     if (response.data.perfil === 'ADMIN') {
       router.push('/admin')
@@ -71,6 +78,8 @@ const fazerLogin = async () => {
     loading.value = false
   }
 }
+
+
 </script>
 
 <style scoped>
