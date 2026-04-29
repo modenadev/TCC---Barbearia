@@ -173,3 +173,38 @@ section {
   position: relative;
   z-index: 1;
 }
+
+:deep(.dp__theme_dark) {
+  --dp-background-color: #121212;
+  --dp-text-color: #f5f5f5;
+  --dp-hover-color: rgba(212, 175, 55, 0.18);
+  --dp-hover-text-color: #ffffff;
+  --dp-primary-color: #d4af37;
+  --dp-primary-text-color: #111111;
+  --dp-secondary-color: #2b2b2b;
+  --dp-border-color: rgba(255, 255, 255, 0.08);
+  --dp-menu-border-color: rgba(255, 255, 255, 0.08);
+  --dp-border-radius: 14px;
+  --dp-font-family: 'Inter', sans-serif;
+}
+
+:deep(.dp__input) {
+  height: 58px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding-left: 16px;
+  font-weight: 600;
+}
+
+:deep(.dp__input:focus) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12);
+}
+
+:deep(.dp__menu) {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+}

@@ -1,4 +1,19 @@
 <template>
+
+  <section class="home-banner">
+
+    <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=2070&auto=format&fit=crop"
+      alt="Barbearia" class="banner-bg" />
+
+    <div class="banner-overlay"></div>
+
+    <div class="banner-content">
+      <img src="/src/assets/logo.png" alt="RD Barbearia" class="banner-logo" />
+
+    </div>
+
+
+  </section>
   <section class="hero">
     <div class="container hero-grid">
       <div>
@@ -143,6 +158,112 @@ onUnmounted(() => {
 
 
 <style scoped>
+.home-banner {
+  position: relative;
+
+  height: 92vh;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-bg {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  inset: 0;
+
+  transform: scale(1.05);
+}
+
+.banner-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.65));
+
+  backdrop-filter: blur(1px);
+}
+
+.banner-content {
+  position: relative;
+
+  z-index: 2;
+
+  text-align: center;
+
+  padding: 20px;
+}
+
+.banner-logo {
+  width: 600px;
+
+  max-width: 90vw;
+
+  margin-bottom: 12px;
+
+  filter:
+    drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
+}
+
+.banner-content h1 {
+  font-family: 'Poppins', sans-serif;
+
+  font-size: clamp(42px, 7vw, 82px);
+
+  margin: 0;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+.banner-content p {
+  color: rgba(255, 255, 255, 0.8);
+
+  font-size: 18px;
+
+  margin: 16px 0 32px;
+}
+
+.banner-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  height: 56px;
+
+  padding: 0 32px;
+
+  border-radius: 16px;
+
+  background: var(--primary);
+
+  color: #111;
+
+  font-weight: 700;
+
+  transition: 0.3s;
+}
+
+.banner-btn:hover {
+  transform: translateY(-3px);
+
+  filter: brightness(1.05);
+}
+
 .gallery-section {
   padding: 20px 0 70px;
 }

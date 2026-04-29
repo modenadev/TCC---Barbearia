@@ -4,9 +4,8 @@
       <div class="container navbar-content">
 
         <div class="brand">
-          <img src="/src/assets/logo.jpeg" alt="RD Barbearia" class="logo-img" />
+          <img src="/src/assets/logo.png" alt="RD Barbearia" class="logo-img" />
           <div>
-            <strong>RD Barbearia</strong>
           </div>
         </div>
 
@@ -53,7 +52,6 @@
 
 <style scoped>
 
-
 .login-link {
   color: var(--text-soft);
   font-weight: 600;
@@ -76,13 +74,33 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(71, 71, 71, 0.432);
+
+  background: rgba(32, 32, 32, 0.521);
+
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+
+  border-bottom: 1px solid rgba(49, 43, 43, 0.04);
+}
+
+.navbar::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(90deg,
+      rgba(212, 175, 55, 0.08),
+      transparent,
+      rgba(212, 175, 55, 0.05));
+
+  pointer-events: none;
 }
 
 .navbar-content {
-  height: 100px;
+  height: 85px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -92,14 +110,28 @@
 .brand {
   display: flex;
   align-items: center;
+  margin: 0 0 0 250px;
   gap: 12px;
 }
 
+
 .logo-img {
-  height: 55px;
+  height: 105px;
+  
+
   width: auto;
+
   object-fit: contain;
+
   display: block;
+
+  position: relative;
+
+  z-index: 10;
+
+  transform: translateY(30px);
+
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
 }
 
 .brand-logo {
@@ -158,6 +190,13 @@
   justify-content: flex-end;
   gap: 16px;
   align-items: center;
+}
+
+.nav-right::before{
+  content: "";
+  width: 1px;
+  height: 24px;
+  background: rgb(255, 238, 4);
 }
 
 .icon {
