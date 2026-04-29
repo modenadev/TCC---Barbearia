@@ -52,6 +52,8 @@
 </template>
 
 <style scoped>
+
+
 .login-link {
   color: var(--text-soft);
   font-weight: 600;

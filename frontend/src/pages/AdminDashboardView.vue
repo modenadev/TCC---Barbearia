@@ -50,6 +50,10 @@ const nome = getNome()
   padding: 24px;
 }
 
+.btn-primary {
+  margin-left: 440px;
+}
+
 .dash-card h3 {
   margin-top: 0;
   color: var(--text-soft);
