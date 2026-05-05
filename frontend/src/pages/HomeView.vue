@@ -121,9 +121,46 @@
     </div>
   </section>
 
+  <section class="location-section">
+    <div class="container">
+      <h1 class="location-title">NOSSAS UNIDADES</h1>
+      <div class="location-border">
+
+
+        <p class="location-text">Mogi Mirim</p>
+        <div class="location-top">
+          <div class="location-info">
+            <p>Rua do mirante, 606</p>
+            <p>Mogi Mirim | São Paulo | 13801-100</p>
+            <p>TEL (19) 99980-6091</p>
+          </div>
+
+          <div class="location-hours">
+            <p>Terça a sexta: 9h às 19h</p>
+            <p>Sábado e domingo: 9h às 17h</p>
+          </div>
+
+          <div class="location-image">
+            <img src="https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=600&q=80" />
+          </div>
+        </div>
+
+        <div class="location-map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3687.896946264733!2d-46.95102488807479!3d-22.432904279506282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94c8f972056a6afd%3A0x82421a75176182ba!2sRd%20Studio%20de%20Beleza%20e%20Barbearia!5e0!3m2!1spt-BR!2sbr!4v1777992864007!5m2!1spt-BR!2sbr"
+            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+
+
+
+      </div>
+    </div>
+  </section>
+
 </template>
 
-<script>
+<script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const imagensGaleria = [
@@ -158,6 +195,100 @@ onUnmounted(() => {
 
 
 <style scoped>
+.location-text {
+  font-size: 30px;
+  margin: 15px 0px 0px 40px;
+}
+
+.location-text::after {
+  content: "";
+  display: inline-block;
+  width: 80%;
+  height: 1px;
+  background: yellow;
+  margin: 0 10px 8px;
+}
+
+.location-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 40px;
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-hours {
+  text-align: left;
+  flex: 1;
+}
+
+.location-image {
+  width: 300px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.location-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.location-border {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  border: 1px solid rgb(44, 44, 44);
+  border-radius: 50px;
+}
+
+.location-title {
+
+  font-size: 28px;
+  text-align: center;
+
+}
+
+.location-title::after {
+  content: "";
+  display: inline-block;
+  width: 40px;
+  height: 1px;
+  background: yellow;
+  margin: 0 10px 8px;
+}
+
+.location-title::before {
+  content: "";
+  display: inline-block;
+  width: 40px;
+  height: 1px;
+  background: yellow;
+  margin: 0 10px 8px;
+}
+
+
+
+
+.location-map {
+  width: 100%;
+  height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+}
+
+.location-map iframe {
+  filter: grayscale(0.2) contrast(1.05);
+}
+
 .home-banner {
   position: relative;
 
