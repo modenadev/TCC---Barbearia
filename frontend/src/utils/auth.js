@@ -23,3 +23,7 @@ export function getPerfil() {
 export function getNome() {
     return localStorage.getItem('nome');
 }
+
+export function getUsuario() {
+    return JSON.parse(localStorage.getItem('usuario'));
+}
