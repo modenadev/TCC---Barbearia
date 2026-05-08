@@ -25,6 +25,7 @@ public class AgendamentoService {
     private final HorarioTrabalhoRepository horarioTrabalhoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
+    private final WhatsAppService whatsAppService;
 
     public AgendamentoService(
             AgendamentoRepository agendamentoRepository,
@@ -32,13 +33,15 @@ public class AgendamentoService {
             ServicoService servicoService,
             HorarioTrabalhoRepository horarioTrabalhoRepository,
             UsuarioRepository usuarioRepository,
-            ClienteRepository clienteRepository) {
+            ClienteRepository clienteRepository,
+            WhatsAppService whatsAppService) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteService = clienteService;
         this.servicoService = servicoService;
         this.horarioTrabalhoRepository = horarioTrabalhoRepository;
         this.usuarioRepository = usuarioRepository;
         this.clienteRepository = clienteRepository;
+        this.whatsAppService = whatsAppService;
     }
 
     public List<Agendamento> listar() {
@@ -84,7 +87,28 @@ public class AgendamentoService {
                 .observacoes(request.getObservacoes())
                 .build();
 
-        return agendamentoRepository.save(agendamento);
+        Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+
+        String mensagem = "💈 RD Barbearia\n\n" +
+                "Olá " + clienteParaAgendar.getNome() + "!\n\n" +
+                "Seu agendamento foi confirmado ✅\n\n" +
+                "📅 Data: " +
+                agendamentoSalvo.getDataHoraInicio().toLocalDate() + "\n" +
+
+                "⏰ Horário: " +
+                agendamentoSalvo.getDataHoraInicio().toLocalTime() + "\n" +
+
+                "✂️ Serviço: " +
+                servico.getNome() + "\n\n" +
+
+                "Esperamos você! 🔥";
+
+        whatsAppService.enviarMensagem(
+                clienteParaAgendar.getTelefone(),
+                mensagem);
+
+        return agendamentoSalvo;
+
     }
 
     public Agendamento atualizarStatus(Long id, StatusAgendamento status) {
