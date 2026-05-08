@@ -20,6 +20,8 @@ public class RegisterRequest {
     @NotBlank
     private String telefone;
 
+    private Boolean aceitouTermos;
+
 
     
 }

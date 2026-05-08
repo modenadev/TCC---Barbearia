@@ -31,4 +31,7 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Perfil perfil;
+
+    @Column(nullable = false)
+    private Boolean aceitouTermos;
 }

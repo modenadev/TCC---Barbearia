@@ -28,6 +28,19 @@
             <input v-model="senha" type="password" class="input" required />
           </div>
 
+          <div class="checkbox-field">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="aceitouTermos" required />
+
+              <span>
+                Autorizo o uso do meu WhatsApp e dados de contato
+                para receber lembretes de agendamento,
+                confirmações, novidades e comunicações da
+                RD Barbearia.
+              </span>
+            </label>
+          </div>
+
           <button class="btn btn-primary full" type="submit" :disabled="loading">
             {{ loading ? 'Criando conta...' : 'Criar conta' }}
           </button>
@@ -52,6 +65,8 @@ import { salvarAuth } from '../utils/auth'
 
 const router = useRouter()
 
+const aceitouTermos = ref(false)
+
 const nome = ref('')
 const email = ref('')
 const telefone = ref('')
@@ -68,7 +83,9 @@ const cadastrar = async () => {
       nome: nome.value,
       email: email.value,
       senha: senha.value,
-      telefone: telefone.value
+      telefone: telefone.value,
+      aceitouTermos: aceitouTermos.value
+
     })
 
     salvarAuth(response.data)
@@ -83,6 +100,26 @@ const cadastrar = async () => {
 </script>
 
 <style scoped>
+.checkbox-field {
+  margin: 18px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checkbox-label input {
+  margin-top: 4px;
+  accent-color: #d4af37;
+  width: 18px;
+  height: 18px;
+}
+
 .register-wrapper {
   min-height: 70vh;
   display: grid;

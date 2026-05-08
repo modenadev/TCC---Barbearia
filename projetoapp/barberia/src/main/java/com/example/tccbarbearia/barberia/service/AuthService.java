@@ -34,6 +34,7 @@ public class AuthService {
 
         @Transactional
         public AuthResponse registerCliente(RegisterRequest request) {
+
                 if (usuarioRepository.existsByEmail(request.getEmail())) {
                         throw new BusinessException("E-mail já cadastrado");
                 }
@@ -44,6 +45,7 @@ public class AuthService {
                                 .senha(passwordEncoder.encode(request.getSenha()))
                                 .telefone(request.getTelefone())
                                 .perfil(Perfil.CLIENTE)
+                                .aceitouTermos(request.getAceitouTermos())
                                 .build();
 
                 usuarioRepository.save(usuario);
@@ -53,6 +55,7 @@ public class AuthService {
                 cliente.setEmail(request.getEmail());
                 cliente.setTelefone(request.getTelefone());
                 cliente.setUsuario(usuario);
+
                 clienteRepository.save(cliente);
 
                 String token = jwtService.generateToken(usuario.getEmail());
