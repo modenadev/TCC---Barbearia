@@ -8,6 +8,7 @@ public class BarberiaApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BarberiaApplication.class, args);
+		System.out.println("Aplicação iniciada com sucesso!");
 	}
 
 }

@@ -6,6 +6,7 @@ import ClienteDashboardView from '../pages/ClienteDashboardView.vue'
 import { estaAutenticado, getPerfil } from '../utils/auth'
 import RegisterView from '../pages/RegisterView.vue'
 import AdminAgendamentosView from '../pages/AdminAgendamentosView.vue'
+import AgendaSemanal from '../pages/AgendaSemanal.vue'
 
 const routes = [
     {
@@ -56,7 +57,18 @@ const routes = [
         name: 'admin-agendamentos',
         component: AdminAgendamentosView,
         meta: { requiresAuth: true, role: 'ADMIN' }
+    },
+
+    {
+        path: '/admin/agenda',
+        name: 'admin-agenda',
+        component: AgendaSemanal,
+        meta: { requiresAuth: true, role: 'ADMIN' }
     }
+
+
+
+
 
 
 ]

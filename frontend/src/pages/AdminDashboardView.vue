@@ -21,6 +21,9 @@
         <div class="card dash-card">
           <h3>Agendamentos Hoje</h3>
           <strong>{{ agendamentosHoje }}</strong>
+          <router-link to="/admin/agenda" class="btn btn-secondary">
+            Ver agenda
+          </router-link>
         </div>
 
         <div class="card dash-card">
@@ -263,7 +266,6 @@ const atualizarDashboard = (agendamentos) => {
     a => a.status === 'NO_SHOW'
   ).length
 
-  // gráfico dias
   const dias = {}
 
   agendamentos.forEach(a => {
@@ -404,6 +406,14 @@ onMounted(() => {
   width: fit-content;
   margin: 0 auto;
 }
+
+.btn-secondary {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(53, 53, 53, 0.63);
+  }
 
 @media (max-width: 900px) {
   .charts {
