@@ -39,13 +39,8 @@
         </button>
 
         <div v-if="horarios.length" class="horarios-grid">
-          <button
-            v-for="horario in horarios"
-            :key="horario.horario"
-            class="slot"
-            :disabled="!horario.disponivel"
-            @click="remarcar(horario.horario)"
-          >
+          <button v-for="horario in horarios" :key="horario.horario" class="slot" :disabled="!horario.disponivel"
+            @click="remarcar(horario.horario)">
             {{ horario.horario }}
           </button>
         </div>
@@ -166,9 +161,10 @@ onMounted(carregar)
 
 .slot {
   border: 1px solid var(--card-border);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   padding: 12px 16px;
   border-radius: 12px;
 }
+
 </style>
