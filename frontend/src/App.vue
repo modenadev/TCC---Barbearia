@@ -200,7 +200,7 @@ const buscarNotificacoesAdmin = async () => {
 
 const limparNotificacao = async (id) => {
   try {
-    await api.patch(`http://localhost:8080/api/notificacoes/${id}/ler`)
+    await api.patch(`http://localhost:8080/api/notificacoes/${id}/marcar-como-lida`)
     notificacoes.value = notificacoes.value.filter(n => n.id !== id)
   } catch (error) {
     console.error(error)
@@ -211,7 +211,7 @@ const limparNotificacao = async (id) => {
 
 const marcarTodasComoLidas = async () => {
   try {
-    await api.post('http://localhost:8080/api/notificacoes/ler-todas')
+    await api.patch('http://localhost:8080/api/notificacoes//marcar-todas-como-lidas')
     notificacoes.value = []
   } catch (error) {
     console.error(error)
