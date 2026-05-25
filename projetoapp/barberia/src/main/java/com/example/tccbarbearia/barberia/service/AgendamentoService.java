@@ -8,11 +8,14 @@ import com.example.tccbarbearia.barberia.repository.AgendamentoRepository;
 import com.example.tccbarbearia.barberia.repository.ClienteRepository;
 import com.example.tccbarbearia.barberia.repository.HorarioTrabalhoRepository;
 import com.example.tccbarbearia.barberia.repository.UsuarioRepository;
+import com.example.tccbarbearia.barberia.entity.Notificacao; 
+import com.example.tccbarbearia.barberia.repository.NotificacaoRepository; 
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +29,9 @@ public class AgendamentoService {
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
     private final WhatsAppService whatsAppService;
+    private final NotificacaoRepository notificacaoRepository;
 
+    // Construtor corrigido: adicionado NotificacaoRepository na inicialização
     public AgendamentoService(
             AgendamentoRepository agendamentoRepository,
             ClienteService clienteService,
@@ -34,7 +39,8 @@ public class AgendamentoService {
             HorarioTrabalhoRepository horarioTrabalhoRepository,
             UsuarioRepository usuarioRepository,
             ClienteRepository clienteRepository,
-            WhatsAppService whatsAppService) {
+            WhatsAppService whatsAppService,
+            NotificacaoRepository notificacaoRepository) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteService = clienteService;
         this.servicoService = servicoService;
@@ -42,6 +48,7 @@ public class AgendamentoService {
         this.usuarioRepository = usuarioRepository;
         this.clienteRepository = clienteRepository;
         this.whatsAppService = whatsAppService;
+        this.notificacaoRepository = notificacaoRepository;
     }
 
     public List<Agendamento> listar() {
@@ -63,9 +70,7 @@ public class AgendamentoService {
 
         if (usuarioLogado.getPerfil() == Perfil.ADMIN) {
             clienteParaAgendar = clienteService.buscarPorId(request.getClienteId());
-        }
-
-        else {
+        } else {
             clienteParaAgendar = clienteRepository.findByUsuario(usuarioLogado)
                     .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
         }
@@ -92,15 +97,9 @@ public class AgendamentoService {
         String mensagem = "💈 RD Barbearia\n\n" +
                 "Olá " + clienteParaAgendar.getNome() + "!\n\n" +
                 "Seu agendamento foi confirmado ✅\n\n" +
-                "📅 Data: " +
-                agendamentoSalvo.getDataHoraInicio().toLocalDate() + "\n" +
-
-                "⏰ Horário: " +
-                agendamentoSalvo.getDataHoraInicio().toLocalTime() + "\n" +
-
-                "✂️ Serviço: " +
-                servico.getNome() + "\n\n" +
-
+                "📅 Data: " + agendamentoSalvo.getDataHoraInicio().toLocalDate() + "\n" +
+                "⏰ Horário: " + agendamentoSalvo.getDataHoraInicio().toLocalTime() + "\n" +
+                "✂️ Serviço: " + servico.getNome() + "\n\n" +
                 "Esperamos você! 🔥";
 
         whatsAppService.enviarMensagem(
@@ -108,7 +107,6 @@ public class AgendamentoService {
                 mensagem);
 
         return agendamentoSalvo;
-
     }
 
     public Agendamento atualizarStatus(Long id, StatusAgendamento status) {
@@ -189,12 +187,11 @@ public class AgendamentoService {
                 .orElseThrow(() -> new BusinessException("Cliente não encontrado"));
 
         return agendamentoRepository.findByClienteId(cliente.getId());
-
     }
+
 
     public Agendamento remarcarAgendamento(Long id, AgendamentoRequest request) {
         Agendamento agendamento = buscarPorId(id);
-
         Servico servico = agendamento.getServico();
 
         LocalDateTime novoInicio = request.getDataHoraInicio();
@@ -211,13 +208,29 @@ public class AgendamentoService {
         agendamento.setDataHoraFim(novoFim);
         agendamento.setStatus(StatusAgendamento.AGENDADO);
 
-        return agendamentoRepository.save(agendamento);
+        Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy às HH:mm");
+        String mensagemLog = "🔄 O cliente " + agendamentoSalvo.getCliente().getNome() +
+                " alterou o horário do serviço (" + servico.getNome() +
+                ") para o dia " + novoInicio.format(formato);
+
+        notificacaoRepository.save(new Notificacao(id, mensagemLog, false, novoFim));
+
+        return agendamentoSalvo;
     }
 
     public Agendamento cancelarAgendamento(Long id) {
         Agendamento agendamento = buscarPorId(id);
         agendamento.setStatus(StatusAgendamento.CANCELADO);
-        return agendamentoRepository.save(agendamento);
-    }
 
+        Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+
+        String mensagemLog = "❌ O agendamento de " + agendamentoSalvo.getCliente().getNome() +
+                " (" + agendamentoSalvo.getServico().getNome() + ") foi CANCELADO.";
+
+        notificacaoRepository.save(new Notificacao(id, mensagemLog, false, null));
+
+        return agendamentoSalvo;
+    }
 }

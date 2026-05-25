@@ -26,6 +26,33 @@
             <router-link to="/cliente" @click="fecharMenu">Minha Área</router-link>
           </li>
 
+          <li v-if="estaLogado && perfilUsuario === 'ADMIN'" class="nav-notificacoes-container">
+            <button class="btn-sininho" @click="abaNotificacoesAberta = !abaNotificacoesAberta">
+              🔔
+              <span v-if="notificacoes.length > 0" class="badge-notificacoes">
+                {{ notificacoes.length }}
+              </span>
+            </button>
+
+            <div v-if="abaNotificacoesAberta" class="notificacoes-dropdown">
+              <div class="dropdown-header">
+                <span>Logs do Sistema</span>
+                <button v-if="notificacoes.length > 0" class="btn-clear-all" @click="marcarTodasComoLidas">Limpar
+                  todas</button>
+              </div>
+
+              <ul v-if="notificacoes.length > 0" class="dropdown-list">
+                <li v-for="notificacao in notificacoes" :key="notificacao.id" class="dropdown-item">
+                  <p class="notificacao-msg">{{ notificacao.mensagem }}</p>
+                  <button class="btn-ler-notificacao" @click="limparNotificacao(notificacao.id)">✕</button>
+                </li>
+              </ul>
+              <div v-else class="dropdown-empty">
+                <p>Nenhuma nova atualização.</p>
+              </div>
+            </div>
+          </li>
+
           <li v-if="estaLogado && perfilUsuario === 'ADMIN'">
             <router-link to="/admin" @click="fecharMenu" class="nav-admin">Painel Admin</router-link>
           </li>
@@ -111,7 +138,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import api from './services/api'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -120,14 +148,38 @@ const route = useRoute()
 const menuAberto = ref(false)
 const estaLogado = ref(false)
 const perfilUsuario = ref('')
+const abaNotificacoesAberta = ref(false)
+
+const notificacoes = ref([])
+let intervaloNotificacoes = null
 
 const fecharMenu = () => {
   menuAberto.value = false
+  abaNotificacoesAberta.value = false
+}
+
+
+const gerenciarTemporizadorNotificacoes = () => {
+
+  if (intervaloNotificacoes) {
+    clearInterval(intervaloNotificacoes)
+    intervaloNotificacoes = null
+  }
+
+
+  if (estaLogado.value && perfilUsuario.value === 'ADMIN') {
+    buscarNotificacoesAdmin()
+    intervaloNotificacoes = setInterval(buscarNotificacoesAdmin, 10000)
+  } else {
+    notificacoes.value = []
+  }
 }
 
 const checarStatusLogin = () => {
   estaLogado.value = !!localStorage.getItem('token')
   perfilUsuario.value = localStorage.getItem('perfil') || ''
+
+  gerenciarTemporizadorNotificacoes()
 }
 
 const fazerLogout = () => {
@@ -137,16 +189,52 @@ const fazerLogout = () => {
   router.push('/')
 }
 
+const buscarNotificacoesAdmin = async () => {
+  try {
+    const response = await api.get('http://localhost:8080/api/notificacoes/nao-lidas')
+    notificacoes.value = response.data
+  } catch (error) {
+    console.error("Erro ao buscar logs/notificações", error)
+  }
+}
+
+const limparNotificacao = async (id) => {
+  try {
+    await api.patch(`http://localhost:8080/api/notificacoes/${id}/ler`)
+    notificacoes.value = notificacoes.value.filter(n => n.id !== id)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+
+
+const marcarTodasComoLidas = async () => {
+  try {
+    await api.post('http://localhost:8080/api/notificacoes/ler-todas')
+    notificacoes.value = []
+  } catch (error) {
+    console.error(error)
+  }
+}
 watch(() => route.path, () => {
   checarStatusLogin()
+  abaNotificacoesAberta.value = false
 })
 
 onMounted(() => {
   checarStatusLogin()
 })
+
+onUnmounted(() => {
+  if (intervaloNotificacoes) {
+    clearInterval(intervaloNotificacoes)
+  }
+})
 </script>
 
 <style>
+
 .navbar {
   position: fixed;
   top: 0;
@@ -263,6 +351,130 @@ onMounted(() => {
   min-height: calc(100vh - 75px - 250px);
 }
 
+
+.nav-notificacoes-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.btn-sininho {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+  padding: 6px;
+  transition: transform 0.2s;
+}
+
+.btn-sininho:hover {
+  transform: scale(1.15);
+}
+
+.badge-notificacoes {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid #111112;
+}
+
+.notificacoes-dropdown {
+  position: absolute;
+  top: 50px;
+  right: -50px;
+  background-color: #161618;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 340px;
+  max-height: 400px;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-clear-all {
+  background: transparent;
+  border: none;
+  color: var(--primary, #facc15);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.dropdown-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notificacao-msg {
+  margin: 0;
+  font-size: 13px;
+  color: #d1d5db;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.btn-ler-notificacao {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.btn-ler-notificacao:hover {
+  color: #ef4444;
+}
+
+.dropdown-empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -283,7 +495,6 @@ onMounted(() => {
   border-radius: 4px;
   transition: all 0.3s ease;
 }
-
 
 .main-footer {
   background-color: #0b0b0c;
@@ -405,101 +616,108 @@ onMounted(() => {
   transform: translateY(-3px);
 }
 
+
 @media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
 
-  @media (max-width: 768px) {
-    .menu-toggle {
-      display: flex;
-    }
+  .nav-logo-text {
+    display: none;
+  }
 
-    .nav-logo-text {
-      display: none;
-    }
+  .nav-logo-img {
+    height: 48px;
+  }
 
-    .nav-logo-img {
-      height: 48px;
-    }
+  .nav-links {
+    position: fixed;
+    top: 75px;
+    left: 0;
+    width: 100%;
+    background-color: #111112;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+    gap: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transform: translateY(-160%);
+    transition: transform 0.4s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+  }
 
-    .nav-links {
-      position: fixed;
-      top: 75px;
-      left: 0;
-      width: 100%;
-      background-color: #111112;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 0;
-      gap: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
 
-      transform: translateY(-160%);
-      transition: transform 0.4s ease-in-out;
-      opacity: 0;
-      visibility: hidden;
-    }
+  .nav-links a {
+    font-size: 18px;
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
 
-    .nav-links.open {
-      transform: translateY(0);
-      opacity: 1;
-      visibility: visible;
-    }
+  .nav-auth-item {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
 
-    .nav-links a {
-      font-size: 18px;
-      width: 100%;
-      text-align: center;
-      display: block;
-    }
+  .btn-auth {
+    width: 80%;
+    text-align: center;
+    font-size: 18px;
+    padding: 12px 0;
+  }
 
-    .nav-auth-item {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
+  .notificacoes-dropdown {
+    position: fixed;
+    top: 75px;
+    left: 0;
+    width: 100%;
+    right: 0;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
 
-    .btn-auth {
-      width: 80%;
-      text-align: center;
-      font-size: 18px;
-      padding: 12px 0;
-    }
+  .menu-toggle.is-active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+    background-color: var(--primary, #facc15);
+  }
 
-    .menu-toggle.is-active .bar:nth-child(1) {
-      transform: translateY(8px) rotate(45deg);
-      background-color: var(--primary, #facc15);
-    }
+  .menu-toggle.is-active .bar:nth-child(2) {
+    opacity: 0;
+  }
 
-    .menu-toggle.is-active .bar:nth-child(2) {
-      opacity: 0;
-    }
+  .menu-toggle.is-active .bar:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+    background-color: var(--primary, #fa8f15);
+  }
 
-    .menu-toggle.is-active .bar:nth-child(3) {
-      transform: translateY(-9px) rotate(-45deg);
-      background-color: var(--primary, #fa8f15);
-    }
+  .main-footer {
+    padding: 40px 0 20px 0;
+    text-align: center;
+  }
 
-    .main-footer {
-      padding: 40px 0 20px 0;
-      text-align: center;
-    }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 30px;
+  }
 
-    .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 32px;
-      margin-bottom: 30px;
-    }
+  .footer-block.brand p {
+    margin: 0 auto;
+  }
 
-    .footer-block.brand p {
-      margin: 0 auto;
-    }
-
-    .footer-socials {
-      justify-content: center;
-      margin-bottom: 10px;
-    }
+  .footer-socials {
+    justify-content: center;
+    margin-bottom: 10px;
   }
 }
 </style>
