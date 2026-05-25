@@ -1,9 +1,7 @@
 <template>
   <section class="agendamento-banner">
-    <img
-      src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1600&q=80"
-      alt="Barbearia"
-    />
+    <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1600&q=80"
+      alt="Barbearia" />
     <div class="overlay"></div>
 
     <div class="banner-content">
@@ -21,7 +19,7 @@
 
           <div class="field">
             <label>Serviço</label>
-            <select v-model="servicoId" class="select" required>
+            <select v-model="servicoId" class="select custom-input" required>
               <option value="">Selecione</option>
               <option v-for="servico in servicos" :key="servico.id" :value="servico.id">
                 {{ servico.nome }}
@@ -31,7 +29,7 @@
 
           <div class="field">
             <label>Data</label>
-            <input type="date" v-model="data" class="input" required />
+            <input type="date" v-model="data" class="input custom-input" required />
           </div>
 
           <button type="submit" class="btn btn-primary">Buscar horários</button>
@@ -41,14 +39,9 @@
           <h3>Horários disponíveis</h3>
 
           <div class="horarios-grid">
-            <button
-              v-for="horario in horarios"
-              :key="horario.horario"
-              class="slot"
-              :class="{ selected: horarioSelecionado === horario.horario }"
-              :disabled="!horario.disponivel"
-              @click="selecionarHorario(horario.horario)"
-            >
+            <button v-for="horario in horarios" :key="horario.horario" class="slot"
+              :class="{ selected: horarioSelecionado === horario.horario }" :disabled="!horario.disponivel"
+              @click="selecionarHorario(horario.horario)">
               {{ horario.horario }}
             </button>
           </div>
@@ -88,17 +81,17 @@
         <form v-if="horarioSelecionado" @submit.prevent="agendar" class="mini-form">
           <div class="field">
             <label>Nome</label>
-            <input v-model="nome" class="input" required />
+            <input v-model="nome" class="input custom-input" required />
           </div>
 
           <div class="field">
             <label>Telefone</label>
-            <input v-model="telefone" class="input" required />
+            <input v-model="telefone" class="input custom-input" required />
           </div>
 
           <div class="field">
             <label>E-mail</label>
-            <input v-model="email" class="input" />
+            <input v-model="email" class="input custom-input" />
           </div>
 
           <button type="submit" class="btn btn-primary full">
@@ -113,7 +106,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import api from '../services/api'
-
+import Swal from 'sweetalert2' 
 
 const servicos = ref([])
 const horarios = ref([])
@@ -134,13 +127,24 @@ const formatarPreco = (valor) => {
   return Number(valor).toFixed(2).replace('.', ',')
 }
 
+const alertStyle = {
+  background: '#141416', 
+  color: '#ffffff', 
+  confirmButtonColor: '#facc15', 
+}
+
 const carregarServicos = async () => {
   try {
     const response = await api.get('/servicos')
     servicos.value = response.data
   } catch (error) {
     console.error(error)
-    alert('Erro ao carregar serviços.')
+    Swal.fire({
+      ...alertStyle,
+      icon: 'error',
+      title: 'Ops!',
+      text: 'Erro ao carregar a lista de serviços.'
+    })
   }
 }
 
@@ -155,9 +159,23 @@ const buscarHorarios = async () => {
 
     horarios.value = response.data
     horarioSelecionado.value = ''
+
+    if (horarios.value.length === 0) {
+      Swal.fire({
+        ...alertStyle,
+        icon: 'info',
+        title: 'Poxa...',
+        text: 'Não há horários disponíveis para esta data.'
+      })
+    }
   } catch (error) {
     console.error(error)
-    alert('Erro ao buscar horários.')
+    Swal.fire({
+      ...alertStyle,
+      icon: 'error',
+      title: 'Erro',
+      text: 'Erro ao buscar horários.'
+    })
   }
 }
 
@@ -182,8 +200,15 @@ const agendar = async () => {
       observacoes: 'Agendamento realizado pelo cliente'
     })
 
-    alert('Agendamento realizado com sucesso!')
+    // Alerta de SUCESSO!
+    Swal.fire({
+      ...alertStyle,
+      icon: 'success',
+      title: 'Agendado!',
+      text: 'Seu horário foi marcado com sucesso. Te esperamos na barbearia!',
+    })
 
+    // Limpa o formulário
     nome.value = ''
     telefone.value = ''
     email.value = ''
@@ -191,7 +216,12 @@ const agendar = async () => {
     horarios.value = []
   } catch (error) {
     console.error(error)
-    alert('Erro ao realizar agendamento.')
+    Swal.fire({
+      ...alertStyle,
+      icon: 'error',
+      title: 'Erro no Agendamento',
+      text: 'Não foi possível reservar o horário. Tente novamente.'
+    })
   }
 }
 
@@ -217,7 +247,7 @@ onMounted(carregarServicos)
 .agendamento-banner .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.78));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.78));
 }
 
 .banner-content {
@@ -233,7 +263,7 @@ onMounted(carregarServicos)
 }
 
 .banner-content span {
-  color: var(--primary);
+  color: var(--primary, #facc15);
   letter-spacing: 4px;
   font-size: 13px;
   font-weight: 800;
@@ -267,10 +297,11 @@ onMounted(carregarServicos)
 .horarios-card,
 .resumo-card {
   padding: 28px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
 }
 
 .form-card h2,
@@ -291,16 +322,36 @@ onMounted(carregarServicos)
   font-size: 14px;
 }
 
-.input,
-.select {
+
+.custom-input {
+  width: 100%;
   height: 58px;
-  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s, background 0.3s;
+
+  color-scheme: dark;
 }
 
-.input:focus,
-.select:focus {
+.custom-input:focus {
   transform: translateY(-2px);
+  border-color: var(--primary, #facc15);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
+  background: rgba(255, 255, 255, 0.08);
 }
+
+select.custom-input option {
+  background: #111112;
+  color: #fff;
+  padding: 10px;
+}
+
 
 .horarios-card {
   margin-top: 20px;
@@ -315,9 +366,9 @@ onMounted(carregarServicos)
 .slot {
   min-width: 100px;
   height: 54px;
-  border: 1px solid var(--card-border);
-  background: rgba(255,255,255,0.03);
-  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
   border-radius: 14px;
   cursor: pointer;
   font-weight: 700;
@@ -326,14 +377,15 @@ onMounted(carregarServicos)
 
 .slot:hover:not(:disabled) {
   transform: translateY(-3px);
-  border-color: var(--primary);
-  box-shadow: 0 10px 20px rgba(212,175,55,0.15);
+  border-color: var(--primary, #facc15);
+  background: rgba(250, 204, 21, 0.05);
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.15);
 }
 
 .slot.selected {
-  background: var(--primary);
+  background: var(--primary, #facc15);
   color: #111;
-  border-color: var(--primary);
+  border-color: var(--primary, #facc15);
 }
 
 .slot:disabled {
@@ -350,7 +402,7 @@ onMounted(carregarServicos)
   justify-content: space-between;
   gap: 16px;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .resumo-item span {
@@ -359,10 +411,11 @@ onMounted(carregarServicos)
 
 .resumo-item strong {
   text-align: right;
+  color: #fff;
 }
 
 .resumo-item.total strong {
-  color: var(--primary);
+  color: var(--primary, #facc15);
   font-size: 20px;
 }
 
@@ -376,7 +429,19 @@ onMounted(carregarServicos)
 
 .btn-primary {
   background: linear-gradient(135deg, #f5c542, #d4af37);
-  box-shadow: 0 10px 25px rgba(212,175,55,0.22);
+  color: #111;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  height: 58px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.22);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
 @keyframes fadeUp {
