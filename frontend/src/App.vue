@@ -25,6 +25,11 @@
           <li v-if="estaLogado && perfilUsuario === 'CLIENTE'">
             <router-link to="/cliente" @click="fecharMenu">Minha Área</router-link>
           </li>
+          <li v-if="estaLogado && perfilUsuario === 'ADMIN'">
+            <router-link to="/admin" @click="fecharMenu" class="nav-admin">Painel Admin</router-link>
+          </li>
+
+
 
           <li v-if="estaLogado && perfilUsuario === 'ADMIN'" class="nav-notificacoes-container">
             <button class="btn-sininho" @click="abaNotificacoesAberta = !abaNotificacoesAberta">
@@ -53,10 +58,6 @@
             </div>
           </li>
 
-          <li v-if="estaLogado && perfilUsuario === 'ADMIN'">
-            <router-link to="/admin" @click="fecharMenu" class="nav-admin">Painel Admin</router-link>
-          </li>
-
           <li class="nav-auth-item">
             <button v-if="estaLogado" @click="fazerLogout" class="btn-auth logout">
               Sair
@@ -65,6 +66,8 @@
               Entrar
             </router-link>
           </li>
+
+
         </ul>
       </div>
     </nav>
@@ -211,7 +214,7 @@ const limparNotificacao = async (id) => {
 
 const marcarTodasComoLidas = async () => {
   try {
-    await api.patch('http://localhost:8080/api/notificacoes//marcar-todas-como-lidas')
+    await api.patch('http://localhost:8080/api/notificacoes/marcar-todas-como-lidas')
     notificacoes.value = []
   } catch (error) {
     console.error(error)
@@ -234,7 +237,6 @@ onUnmounted(() => {
 </script>
 
 <style>
-
 .navbar {
   position: fixed;
   top: 0;

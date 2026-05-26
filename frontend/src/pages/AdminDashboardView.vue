@@ -285,7 +285,6 @@ const atualizarDashboard = (agendamentos) => {
     ]
   }
 
-  // gráfico serviços
   const servicos = {}
 
   agendamentos.forEach(a => {

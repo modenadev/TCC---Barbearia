@@ -78,7 +78,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import api from '../services/api'
-import Swal from 'sweetalert2' // Importa a biblioteca de alertas
+import Swal from 'sweetalert2' 
 
 const agendamentos = ref([])
 const loading = ref(true)
@@ -86,7 +86,6 @@ const selecionado = ref(null)
 const novaData = ref('')
 const horarios = ref([])
 
-// Configuração padrão do SweetAlert para combinar com o tema escuro
 const swalConfig = {
   background: '#141416',
   color: '#ffffff',

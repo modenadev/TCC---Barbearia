@@ -8,8 +8,7 @@ import com.example.tccbarbearia.barberia.repository.AgendamentoRepository;
 import com.example.tccbarbearia.barberia.repository.ClienteRepository;
 import com.example.tccbarbearia.barberia.repository.HorarioTrabalhoRepository;
 import com.example.tccbarbearia.barberia.repository.UsuarioRepository;
-import com.example.tccbarbearia.barberia.entity.Notificacao; 
-import com.example.tccbarbearia.barberia.repository.NotificacaoRepository; 
+import com.example.tccbarbearia.barberia.repository.NotificacaoRepository;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -94,6 +93,23 @@ public class AgendamentoService {
 
         Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
 
+        try {
+            String mensagemLog = String.format("Novo agendamento: %s marcou %s para o dia %s",
+                    agendamentoSalvo.getCliente().getNome(),
+                    agendamentoSalvo.getServico().getNome(),
+                    agendamentoSalvo.getDataHoraInicio().format(DateTimeFormatter.ofPattern("dd/MM 'às' HH:mm")));
+
+            Notificacao notificacao = new Notificacao(
+                    agendamentoSalvo.getId(),
+                    mensagemLog,
+                    false,
+                    agendamentoSalvo.getDataHoraFim());
+
+            notificacaoRepository.save(notificacao);
+
+        } catch (Exception e) {
+            System.err.println("Erro ao gerar notificação do agendamento: " + e.getMessage());
+        }
         String mensagem = "💈 RD Barbearia\n\n" +
                 "Olá " + clienteParaAgendar.getNome() + "!\n\n" +
                 "Seu agendamento foi confirmado ✅\n\n" +
@@ -131,6 +147,8 @@ public class AgendamentoService {
 
         List<Agendamento> agendamentosDia = agendamentoRepository.findByDataHoraInicioBetween(inicioDia, fimDia);
 
+        LocalDateTime agora = LocalDateTime.now();
+
         for (HorarioTrabalho faixa : horarios) {
             LocalTime atual = faixa.getHoraInicio();
 
@@ -138,13 +156,18 @@ public class AgendamentoService {
                 LocalDateTime inicioSlot = LocalDateTime.of(data, atual);
                 LocalDateTime fimSlot = inicioSlot.plusMinutes(servico.getDuracaoMinutos());
 
+                if (inicioSlot.isBefore(agora)) {
+                    atual = atual.plusMinutes(60);
+                    continue; 
+                }
+
                 boolean ocupado = agendamentosDia.stream()
                         .filter(a -> a.getStatus() == StatusAgendamento.AGENDADO)
                         .anyMatch(a -> inicioSlot.isBefore(a.getDataHoraFim()) &&
                                 fimSlot.isAfter(a.getDataHoraInicio()));
 
                 resposta.add(new DisponibilidadeResponse(atual, !ocupado));
-                atual = atual.plusMinutes(30);
+                atual = atual.plusMinutes(60);
             }
         }
 
@@ -189,7 +212,6 @@ public class AgendamentoService {
         return agendamentoRepository.findByClienteId(cliente.getId());
     }
 
-
     public Agendamento remarcarAgendamento(Long id, AgendamentoRequest request) {
         Agendamento agendamento = buscarPorId(id);
         Servico servico = agendamento.getServico();
@@ -229,7 +251,7 @@ public class AgendamentoService {
         String mensagemLog = "❌ O agendamento de " + agendamentoSalvo.getCliente().getNome() +
                 " (" + agendamentoSalvo.getServico().getNome() + ") foi CANCELADO.";
 
-        notificacaoRepository.save(new Notificacao(id, mensagemLog, false, null));
+        notificacaoRepository.save(new Notificacao(id, mensagemLog, false, LocalDateTime.now()));
 
         return agendamentoSalvo;
     }
