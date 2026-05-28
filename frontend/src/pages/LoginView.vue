@@ -16,6 +16,7 @@
           <div class="field">
             <label>Senha</label>
             <input v-model="senha" type="password" class="input" required />
+            <a href="#" @click.prevent="recuperarSenha" class="link-esqueci-senha">Esqueci minha senha</a>
           </div>
 
           <p class="register-text">
@@ -40,6 +41,7 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 import { salvarAuth } from '../utils/auth'
 import { atualizarUsuarioLogado } from '../utils/authState'
+import Swal from 'sweetalert2' 
 
 const router = useRouter()
 
@@ -47,6 +49,13 @@ const email = ref('')
 const senha = ref('')
 const erro = ref('')
 const loading = ref(false)
+
+
+const swalConfig = {
+  background: '#141416',
+  color: '#ffffff',
+  confirmButtonColor: '#facc15',
+}
 
 const fazerLogin = async () => {
   erro.value = ''
@@ -79,7 +88,50 @@ const fazerLogin = async () => {
   }
 }
 
+const recuperarSenha = async () => {
+  const { value: emailInput } = await Swal.fire({
+    ...swalConfig,
+    title: 'Recuperar Senha',
+    text: 'Digite o e-mail cadastrado na sua conta:',
+    input: 'email',
+    inputPlaceholder: 'seu@email.com',
+    showCancelButton: true,
+    cancelButtonText: 'Cancelar',
+    confirmButtonText: 'Enviar senha',
+    cancelButtonColor: '#ef4444',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Você precisa digitar um e-mail!'
+      }
+    }
+  })
 
+  if (emailInput) {
+    Swal.fire({
+      ...swalConfig,
+      title: 'Enviando...',
+      text: 'Gerando senha provisória e contatando o WhatsApp...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+
+    try {
+      await api.post('/auth/esqueci-senha', { email: emailInput })
+
+      Swal.fire({
+        ...swalConfig,
+        icon: 'success',
+        title: 'Enviado!',
+        text: 'Se o e-mail estiver cadastrado, você receberá a senha no WhatsApp em instantes.',
+      })
+    } catch (error) {
+      const msgErro = error.response?.data?.message || 'Erro ao tentar recuperar a senha.'
+      Swal.fire({ ...swalConfig, icon: 'error', title: 'Ops!', text: msgErro })
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -87,6 +139,7 @@ const fazerLogin = async () => {
   margin-top: 20px;
   color: var(--text-soft);
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .register-text a {
@@ -119,5 +172,22 @@ const fazerLogin = async () => {
 .erro {
   color: #ff6b6b;
   margin-top: 14px;
+  text-align: center;
+}
+
+.link-esqueci-senha {
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-soft, #9ca3af);
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  transition: color 0.2s;
+}
+
+.link-esqueci-senha:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 </style>

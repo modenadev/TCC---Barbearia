@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/agendamentos/disponibilidade").permitAll()
                         .requestMatchers("/agendamentos/meus").authenticated()
                         .requestMatchers("/agendamentos/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/usuarios/meus-dados").authenticated()
+                        .requestMatchers("/usuarios/alterar-senha").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

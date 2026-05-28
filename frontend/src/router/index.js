@@ -64,12 +64,14 @@ const routes = [
         name: 'admin-agenda',
         component: AgendaSemanal,
         meta: { requiresAuth: true, role: 'ADMIN' }
+    },
+
+    {
+        path: '/perfil',
+        name: 'perfil',
+        component: () => import('../pages/PerfilView.vue'),
+        meta: { requiresAuth: true }
     }
-
-
-
-
-
 
 ]
 

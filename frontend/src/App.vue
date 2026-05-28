@@ -58,11 +58,27 @@
             </div>
           </li>
 
-          <li class="nav-auth-item">
-            <button v-if="estaLogado" @click="fazerLogout" class="btn-auth logout">
-              Sair
-            </button>
-            <router-link v-else to="/login" @click="fecharMenu" class="btn-auth login">
+          <li v-if="estaLogado" class="nav-profile-container">
+            <div class="profile-trigger" @click="menuPerfilAberto = !menuPerfilAberto">
+              <div class="avatar-circle">
+                {{ nomeUsuario.charAt(0).toUpperCase() || 'U' }}
+              </div>
+              <span class="user-greeting">Olá, {{ nomeUsuario }}</span>
+              <svg class="chevron" :class="{ 'rotate': menuPerfilAberto }" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <div v-if="menuPerfilAberto" class="profile-dropdown">
+              <router-link to="/perfil" @click="fecharMenu" class="dropdown-item">⚙️ Meus Dados</router-link>
+              <button @click="fazerLogout" class="dropdown-item logout-item">🚪 Sair</button>
+            </div>
+          </li>
+
+          <li v-else class="nav-auth-item">
+            <router-link to="/login" @click="fecharMenu" class="btn-auth login">
               Entrar
             </router-link>
           </li>
@@ -156,9 +172,28 @@ const abaNotificacoesAberta = ref(false)
 const notificacoes = ref([])
 let intervaloNotificacoes = null
 
+const menuPerfilAberto = ref(false)
+const nomeUsuario = ref('Cliente') 
+
 const fecharMenu = () => {
   menuAberto.value = false
   abaNotificacoesAberta.value = false
+  menuPerfilAberto.value = false 
+}
+
+const checarStatusLogin = () => {
+  estaLogado.value = !!localStorage.getItem('token')
+  perfilUsuario.value = localStorage.getItem('perfil') || ''
+
+  const nomeSalvo = localStorage.getItem('nome')
+  if (nomeSalvo) {
+
+    nomeUsuario.value = nomeSalvo.split(' ')[0]
+  } else {
+    nomeUsuario.value = perfilUsuario.value === 'ADMIN' ? 'Admin' : 'Cliente'
+  }
+
+  gerenciarTemporizadorNotificacoes()
 }
 
 
@@ -176,13 +211,6 @@ const gerenciarTemporizadorNotificacoes = () => {
   } else {
     notificacoes.value = []
   }
-}
-
-const checarStatusLogin = () => {
-  estaLogado.value = !!localStorage.getItem('token')
-  perfilUsuario.value = localStorage.getItem('perfil') || ''
-
-  gerenciarTemporizadorNotificacoes()
 }
 
 const fazerLogout = () => {
@@ -618,6 +646,110 @@ onUnmounted(() => {
   transform: translateY(-3px);
 }
 
+
+/* ==========================================
+   MENU DE PERFIL (PÍLULA)
+   ========================================== */
+.nav-profile-container {
+  position: relative;
+  margin-left: 10px;
+}
+
+.profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 16px 6px 6px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.profile-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(250, 204, 21, 0.3);
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary, #facc15);
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.user-greeting {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  transition: transform 0.3s ease;
+}
+
+.chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background-color: #161618;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 200px;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #d1d5db;
+  text-decoration: none;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.2s;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary, #facc15);
+}
+
+.logout-item {
+  border-bottom: none;
+  color: #ef4444;
+}
+
+.logout-item:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
 
 @media (max-width: 768px) {
   .menu-toggle {

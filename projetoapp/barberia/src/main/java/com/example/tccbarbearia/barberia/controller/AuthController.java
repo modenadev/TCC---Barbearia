@@ -2,7 +2,10 @@ package com.example.tccbarbearia.barberia.controller;
 
 import com.example.tccbarbearia.barberia.dto.*;
 import com.example.tccbarbearia.barberia.service.AuthService;
+import com.example.tccbarbearia.barberia.service.UsuarioService;
 import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService service;
+    private final UsuarioService usuarioService;
 
-    public AuthController(AuthService service) {
+    public AuthController(AuthService service, UsuarioService usuarioService) {
         this.service = service;
+        this.usuarioService = usuarioService;   
     }
 
     @PostMapping("/register-cliente")
@@ -24,5 +29,11 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return service.login(request);
+    }
+
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<Void> esqueciSenha(@RequestBody EsqueciSenhaRequest request) {
+        usuarioService.esqueciMinhaSenha(request.getEmail());
+        return ResponseEntity.ok().build();
     }
 }
