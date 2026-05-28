@@ -37,6 +37,7 @@
               <span v-if="notificacoes.length > 0" class="badge-notificacoes">
                 {{ notificacoes.length }}
               </span>
+              
             </button>
 
             <div v-if="abaNotificacoesAberta" class="notificacoes-dropdown">
@@ -55,7 +56,10 @@
               <div v-else class="dropdown-empty">
                 <p>Nenhuma nova atualização.</p>
               </div>
+              <span class="close" @click="abaNotificacoesAberta = false">❌</span>
+              <span class="dropdown-footer">Atualizado em {{ new Date().toLocaleTimeString() }}</span>
             </div>
+         
           </li>
 
           <li v-if="estaLogado" class="nav-profile-container">
@@ -749,6 +753,24 @@ onUnmounted(() => {
 .logout-item:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+}
+.dropdown-footer {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.close {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 25px;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {
