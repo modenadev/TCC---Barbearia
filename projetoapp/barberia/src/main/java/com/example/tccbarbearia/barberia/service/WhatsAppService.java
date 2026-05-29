@@ -1,53 +1,47 @@
 package com.example.tccbarbearia.barberia.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class WhatsAppService {
 
     private final RestTemplate restTemplate;
+    private final String WhatsApp = "Zap";
 
     public WhatsAppService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    private final String INSTANCE = "instance173994";
-    private final String TOKEN = "hksk4wbix5r0galw";
-
     public void enviarMensagem(String telefone, String mensagem) {
 
-        String numero = telefone.replaceAll("[^0-9]", "");
-
-        if (!numero.startsWith("55")) {
-            numero = "55" + numero;
-        }
-
-        String url = "https://api.ultramsg.com/" +
-                INSTANCE +
-                "/messages/chat";
+        String url = "http://localhost:8081/message/sendText/" + WhatsApp;
 
         HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("apikey", "SUA_KEY");
 
-        headers.setContentType(
-                MediaType.APPLICATION_FORM_URLENCODED);
+        Map<String, Object> body = new HashMap<>();
+        body.put("number", "5519997305610"); 
+        body.put("text", mensagem);
+       
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-        body.add("token", TOKEN);
-        body.add("to", numero);
-        body.add("body", mensagem);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                url,
-                request,
-                String.class);
-
-        System.out.println(response.getBody());
+            System.out.println("✅ Mensagem enviada: " + response.getBody());
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao enviar Zap: " + e.getMessage());
+        }
     }
 }
